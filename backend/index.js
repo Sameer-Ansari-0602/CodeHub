@@ -69,9 +69,38 @@ yargs(hideBin(process.argv))
 function startServer() {
   const app = express();
   const port = process.env.PORT || 3000;
+  const allowedOrigins = [
+    "https://code-hub-frontend-ochre.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:3000",
+  ];
 
   app.use(bodyParser.json());
   app.use(express.json());
+
+  app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (origin && allowedOrigins.includes(origin)) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+    } else if (!origin) {
+      res.setHeader("Access-Control-Allow-Origin", "*");
+    }
+
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, OPTIONS",
+    );
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Origin, X-Requested-With, Content-Type, Accept, Authorization",
+    );
+
+    if (req.method === "OPTIONS") {
+      return res.sendStatus(204);
+    }
+
+    next();
+  });
 
   const mongoURI = process.env.MONGODB_URI;
 
@@ -80,7 +109,6 @@ function startServer() {
     .then(() => console.log("mongodb connected"))
     .catch((err) => console.error("Error in mongodb connection", err));
 
-  app.use(cors({ origin: "*" }));
   app.use("/", mainRouter);
 
   let user = "test";
