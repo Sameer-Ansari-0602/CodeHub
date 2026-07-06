@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./dashboard.css";
 import Navbar from "../Navbar";
+import { apiUrl } from "../../api";
 
 const Dashboard = () => {
   const [repositories, setRepositories] = useState([]);
@@ -13,9 +14,7 @@ const Dashboard = () => {
 
     const fetchRepositories = async () => {
       try {
-        const response = await fetch(
-          `https://code-hub-live.vercel.app/repo/user/${userId}`,
-        );
+        const response = await fetch(apiUrl(`/repo/user/${userId}`));
         const data = await response.json();
         setRepositories(data.repositories || []);
       } catch (err) {
@@ -25,9 +24,7 @@ const Dashboard = () => {
 
     const fetchSuggestedRepositories = async () => {
       try {
-        const response = await fetch(
-          `https://code-hub-live.vercel.app/repo/all`,
-        );
+        const response = await fetch(apiUrl(`/repo/all`));
         const data = await response.json();
         setSuggestedRepositories(data);
         console.log("Suggested repositories fetched:", data);

@@ -7,6 +7,7 @@ import "./auth.css";
 
 import logo from "../../assets/github-mark-white.svg";
 import { Link } from "react-router-dom";
+import { apiUrl } from "../../api";
 
 const Signup = () => {
   const [email, setEmail] = useState("");
@@ -21,7 +22,7 @@ const Signup = () => {
 
     try {
       setLoading(true);
-      const res = await axios.post("https://code-hub-live.vercel.app/signup", {
+      const res = await axios.post(apiUrl("/signup"), {
         email: email,
         password: password,
         username: username,

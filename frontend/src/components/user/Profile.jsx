@@ -7,6 +7,7 @@ import { UnderlineNav } from "@primer/react";
 import { BookIcon, RepoIcon } from "@primer/octicons-react";
 import HeatMapProfile from "./HeatMap";
 import { useAuth } from "../../authContext";
+import { apiUrl } from "../../api";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -19,9 +20,7 @@ const Profile = () => {
 
       if (userId) {
         try {
-          const response = await axios.get(
-            `https://code-hub-live.vercel.app/userProfile/${userId}`,
-          );
+          const response = await axios.get(apiUrl(`/userProfile/${userId}`));
           setUserDetails(response.data);
         } catch (err) {
           console.error("Cannot fetch user details: ", err);

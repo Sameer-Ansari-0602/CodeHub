@@ -7,6 +7,7 @@ import "./auth.css";
 
 import logo from "../../assets/github-mark-white.svg";
 import { Link } from "react-router-dom";
+import { apiUrl } from "../../api";
 
 const Login = () => {
   // useEffect(() => {
@@ -25,7 +26,7 @@ const Login = () => {
 
     try {
       setLoading(true);
-      const res = await axios.post("https://code-hub-live.vercel.app/login", {
+      const res = await axios.post(apiUrl("/login"), {
         email: email,
         password: password,
       });
