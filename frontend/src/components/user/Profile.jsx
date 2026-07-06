@@ -81,7 +81,7 @@ const Profile = () => {
 
       <div className="profile-page-wrapper">
         <div className="user-profile-section">
-          <div className="profile-image"></div>
+          <img className="profile-image" src={userDetails.avatarUrl || "https://avatar.iran.liara.run/public/avatar"} alt="Profile" />
 
           <div className="name">
             <h3>{userDetails.username}</h3>

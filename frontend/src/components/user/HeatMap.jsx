@@ -32,10 +32,12 @@ const HeatMapProfile = () => {
   const [activityData, setActivityData] = useState([]);
   const [panelColors, setPanelColors] = useState({});
 
+  const endDate = new Date();
+  const startDate = new Date();
+  startDate.setMonth(startDate.getMonth() - 6); // Last 6 months
+
   useEffect(() => {
     const fetchData = async () => {
-      const startDate = "2023-01-01";
-      const endDate = "2023-01-31";
       const data = generateActivityData(startDate, endDate);
       setActivityData(data);
 
@@ -45,16 +47,17 @@ const HeatMapProfile = () => {
     };
     fetchData();
   }, []);
+
   return (
     <div>
       <h4>Recent Contributions</h4>
       <HeatMap
         className="HeatMapProfile"
-        style={{ maxWidth: "700px", height: "200px", color: "white" }}
-        values={activityData}
+        style={{ maxWidth: "700px", color: "white" }}
+        value={activityData}
         weekLabels={["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]}
-        startDate={new Date("2023-01-01")}
-        endDate={new Date("2023-01-31")}
+        startDate={startDate}
+        endDate={endDate}
         rectSize={15}
         space={3}
         rectProps={{

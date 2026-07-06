@@ -1,5 +1,8 @@
 #dashboard {
   display: flex;
-  width: 1080px;
+  width: 100%;
+  padding: 24px;
+  box-sizing: border-box;
   justify-content: space-between;
+  gap: 20px;
 }
