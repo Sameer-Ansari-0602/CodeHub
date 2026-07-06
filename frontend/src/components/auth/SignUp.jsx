@@ -37,7 +37,8 @@ const Signup = () => {
       window.location.href = "/";
     } catch (err) {
       console.error(err);
-      alert("Signup Failed!");
+      const message = err?.response?.data?.message || "Signup Failed!";
+      alert(message);
       setLoading(false);
     }
   };

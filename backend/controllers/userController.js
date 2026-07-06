@@ -1,45 +1,43 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-const { MongoClient, ReturnDocument } = require("mongodb");
+const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-let ObjectId = require("mongodb").ObjectId;
+const User = require("../models/userModel");
 
 dotenv.config();
-const uri = process.env.MONGODB_URI;
-
-let client;
-
-async function connectClient() {
-  if (!client) {
-    client = new MongoClient(uri);
-    await client.connect();
-  }
-}
 
 const getAllUsers = async (req, res) => {
   try {
-    await connectClient();
-    const db = client.db("CodeHub");
-    const usersCollection = db.collection("users");
-
-    const users = await usersCollection.find({}).toArray();
+    const users = await User.find({}).lean();
     res.json(users);
   } catch (err) {
     console.error("Error during fetching", err.message);
-    res.status(500).send("Server error");
+    res.status(500).json({ message: "Server error" });
   }
 };
 
 const signup = async (req, res) => {
   const { username, password, email } = req.body;
-  try {
-    await connectClient();
-    const db = client.db("CodeHub");
-    const usersCollection = db.collection("users");
 
-    const user = await usersCollection.findOne({ username });
-    if (user) {
-      return res.status(400).json({ message: "User already exits!" });
+  if (!username || !password || !email) {
+    return res
+      .status(400)
+      .json({ message: "Username, email, and password are required" });
+  }
+
+  try {
+    const existingUser = await User.findOne({
+      $or: [{ username }, { email }],
+    });
+
+    if (existingUser) {
+      const field = existingUser.username === username ? "username" : "email";
+      return res.status(400).json({
+        message:
+          field === "username"
+            ? "Username already exists!"
+            : "Email already exists!",
+      });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -54,28 +52,25 @@ const signup = async (req, res) => {
       starRepos: [],
     };
 
-    const result = await usersCollection.insertOne(newUser);
+    const result = await User.create(newUser);
 
     const token = jwt.sign(
-      { id: result.insertId },
-      process.env.JWT_SECRET_KEY,
+      { id: result._id },
+      process.env.JWT_SECRET_KEY || "mysecretkey",
       { expiresIn: "1h" },
     );
-    res.json({ token, userId: result.insertId });
+
+    res.status(201).json({ token, userId: result._id.toString() });
   } catch (err) {
     console.error("Error during signup", err.message);
-    res.status(500).send("Server error");
+    res.status(500).json({ message: "Server error" });
   }
 };
 
 const login = async (req, res) => {
   const { email, password } = req.body;
   try {
-    await connectClient();
-    const db = client.db("CodeHub");
-    const usersCollection = db.collection("users");
-
-    const user = await usersCollection.findOne({ email });
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials!" });
     }
@@ -85,34 +80,32 @@ const login = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials!" });
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, {
-      expiresIn: "1h",
-    });
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET_KEY || "mysecretkey",
+      {
+        expiresIn: "1h",
+      },
+    );
     res.json({ token, userId: user._id });
   } catch (err) {
     console.error("Error during login : ", err.message);
-    res.status(500).send("Server error!");
+    res.status(500).json({ message: "Server error!" });
   }
 };
 
 const getUserProfile = async (req, res) => {
   const currentID = req.params.id;
   try {
-    await connectClient();
-    const db = client.db("CodeHub");
-    const usersCollection = db.collection("users");
-
-    const user = await usersCollection.findOne({
-      _id: new ObjectId(currentID),
-    });
+    const user = await User.findById(currentID);
 
     if (!user) {
       return res.status(400).json({ message: "User not found!" });
     }
-    res.send(user, { message: "Profile fetched" });
+    res.json(user);
   } catch (err) {
     console.error("Error during fetching : ", err.message);
-    res.status(500).send("Server error!");
+    res.status(500).json({ message: "Server error!" });
   }
 };
 
@@ -120,10 +113,6 @@ const updateUserProfile = async (req, res) => {
   const currentID = req.params.id;
   const { email, password } = req.body;
   try {
-    await connectClient();
-    const db = client.db("CodeHub");
-    const usersCollection = db.collection("users");
-
     let updateFields = { email };
     if (password) {
       const salt = await bcrypt.genSalt(10);
@@ -131,40 +120,32 @@ const updateUserProfile = async (req, res) => {
       updateFields.password = hashedPass;
     }
 
-    const result = await usersCollection.findOneAndUpdate(
-      {
-        _id: new ObjectId(currentID),
-      },
+    const result = await User.findByIdAndUpdate(
+      currentID,
       { $set: updateFields },
-      { ReturnDocument: "after" },
+      { new: true },
     );
-    if (!result.value) {
+    if (!result) {
       return res.status(404).json({ message: "User not found!" });
     }
-    res.send(result.value);
+    res.json(result);
   } catch (err) {
     console.error("Error during updating profile : ", err.message);
-    res.status(500).send("Server error!");
+    res.status(500).json({ message: "Server error!" });
   }
 };
 
 const deleteUserProfile = async (req, res) => {
   const currentID = req.params.id;
   try {
-    await connectClient();
-    const db = client.db("CodeHub");
-    const usersCollection = db.collection("users");
-
-    const result = await usersCollection.deleteOne({
-      _id: new ObjectId(currentID),
-    });
-    if (result.deleteCount == 0) {
+    const result = await User.findByIdAndDelete(currentID);
+    if (!result) {
       return res.status(404).json({ message: "User not found!" });
     }
     res.json({ message: "User profile deleted" });
   } catch (err) {
     console.error("Error during deleting profile : ", err.message);
-    res.status(500).send("Server error!");
+    res.status(500).json({ message: "Server error!" });
   }
 };
 

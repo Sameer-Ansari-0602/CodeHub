@@ -12,6 +12,11 @@ const Dashboard = () => {
   useEffect(() => {
     const userId = localStorage.getItem("userId");
 
+    if (!userId || userId === "null" || userId === "undefined") {
+      setRepositories([]);
+      return;
+    }
+
     const fetchRepositories = async () => {
       try {
         const response = await fetch(apiUrl(`/repo/user/${userId}`));
