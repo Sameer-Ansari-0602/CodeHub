@@ -25,7 +25,7 @@ const Login = () => {
 
     try {
       setLoading(true);
-      const res = await axios.post("http://localhost:3000/login", {
+      const res = await axios.post("https://code-hub-live.vercel.app/login", {
         email: email,
         password: password,
       });
