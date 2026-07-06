@@ -149,6 +149,36 @@ const deleteUserProfile = async (req, res) => {
   }
 };
 
+const starRepository = async (req, res) => {
+  const { userId, repoId } = req.body;
+
+  if (!userId || !repoId) {
+    return res.status(400).json({ error: "userId and repoId are required" });
+  }
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const isStarred = user.starRepos.includes(repoId);
+
+    if (isStarred) {
+      user.starRepos = user.starRepos.filter((id) => id.toString() !== repoId.toString());
+      await user.save();
+      return res.json({ message: "Repository unstarred successfully", starred: false });
+    } else {
+      user.starRepos.push(repoId);
+      await user.save();
+      return res.json({ message: "Repository starred successfully", starred: true });
+    }
+  } catch (err) {
+    console.error("Error toggling star on repository:", err.message);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 module.exports = {
   getAllUsers,
   signup,
@@ -156,4 +186,5 @@ module.exports = {
   getUserProfile,
   updateUserProfile,
   deleteUserProfile,
+  starRepository,
 };

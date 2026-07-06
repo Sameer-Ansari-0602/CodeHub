@@ -8,6 +8,7 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestedRepositories, setSuggestedRepositories] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
+  const [starredRepoIds, setStarredRepoIds] = useState([]);
 
   useEffect(() => {
     const userId = localStorage.getItem("userId");
@@ -38,20 +39,62 @@ const Dashboard = () => {
       }
     };
 
+    const fetchStarredRepos = async () => {
+      try {
+        const response = await fetch(apiUrl(`/userProfile/${userId}`));
+        const data = await response.json();
+        setStarredRepoIds(data.starRepos || []);
+      } catch (err) {
+        console.error("Error fetching starred repos:", err);
+      }
+    };
+
     fetchRepositories();
     fetchSuggestedRepositories();
+    fetchStarredRepos();
   }, []);
 
   useEffect(() => {
     if (searchQuery === "") {
-      setSearchResults(repositories);
+      setSearchResults(suggestedRepositories);
     } else {
-      const filteredRepo = repositories.filter((repo) =>
+      const filteredRepo = suggestedRepositories.filter((repo) =>
         repo.name.toLowerCase().includes(searchQuery.toLowerCase()),
       );
       setSearchResults(filteredRepo);
     }
-  }, [searchQuery, repositories]);
+  }, [searchQuery, suggestedRepositories]);
+
+  const handleStar = async (repoId) => {
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+      alert("You must be logged in to star a repository!");
+      return;
+    }
+
+    try {
+      const response = await fetch(apiUrl("/star"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId, repoId }),
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        if (data.starred) {
+          setStarredRepoIds([...starredRepoIds, repoId]);
+        } else {
+          setStarredRepoIds(starredRepoIds.filter((id) => id !== repoId));
+        }
+      } else {
+        alert(data.error || "Failed to star repository");
+      }
+    } catch (err) {
+      console.error("Error toggling star:", err);
+    }
+  };
 
   return (
     <>
@@ -74,16 +117,25 @@ const Dashboard = () => {
               />
             </div>
             <div className="repo-list">
-              {searchResults.length === 0 ? (
+              {repositories.length === 0 ? (
                 <p style={{ color: "#8b949e", fontSize: "13px" }}>No repositories found</p>
               ) : (
-                searchResults.map((repo) => (
+                repositories.map((repo) => (
                   <div key={repo._id || repo.name} className="repo-item">
-                    <div className="repo-item-header">
-                      <span className="repo-icon">📁</span>
-                      <a href={`/repo/${repo._id}`} className="repo-link">
-                        {repo.name}
-                      </a>
+                    <div className="repo-item-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span className="repo-icon">📁</span>
+                        <a href={`/repo/${repo._id}`} className="repo-link">
+                          {repo.name}
+                        </a>
+                      </div>
+                      <span 
+                        onClick={() => handleStar(repo._id)} 
+                        style={{ cursor: "pointer", fontSize: "14px", color: starredRepoIds.includes(repo._id) ? "#e3b341" : "#8b949e" }}
+                        title={starredRepoIds.includes(repo._id) ? "Unstar" : "Star"}
+                      >
+                        {starredRepoIds.includes(repo._id) ? "★" : "☆"}
+                      </span>
                     </div>
                     {repo.description && <p className="repo-desc">{repo.description}</p>}
                   </div>
@@ -98,10 +150,10 @@ const Dashboard = () => {
               <h2>Explore Repositories</h2>
             </div>
             <div className="suggested-card-grid">
-              {suggestedRepositories.length === 0 ? (
-                <p style={{ color: "#8b949e", fontSize: "13px" }}>No suggested repositories available</p>
+              {searchResults.length === 0 ? (
+                <p style={{ color: "#8b949e", fontSize: "13px" }}>No repositories match your search query.</p>
               ) : (
-                suggestedRepositories.map((repo) => (
+                searchResults.map((repo) => (
                   <div key={repo._id || repo.name} className="suggested-card">
                     <div>
                       <a href={`/repo/${repo._id}`} className="repo-link" style={{ textDecoration: "none" }}>
@@ -113,8 +165,17 @@ const Dashboard = () => {
                       <span className="visibility-badge">
                         {repo.visibility ? "Public" : "Private"}
                       </span>
-                      <span style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}>
-                        ⭐ Star
+                      <span 
+                        onClick={() => handleStar(repo._id)} 
+                        style={{ 
+                          cursor: "pointer", 
+                          display: "flex", 
+                          alignItems: "center", 
+                          gap: "4px",
+                          color: starredRepoIds.includes(repo._id) ? "#e3b341" : "#8b949e"
+                        }}
+                      >
+                        {starredRepoIds.includes(repo._id) ? "★ Starred" : "☆ Star"}
                       </span>
                     </div>
                   </div>
