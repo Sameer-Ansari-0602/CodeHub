@@ -1,8 +1,262 @@
+/* Dashboard Grid Layout */
 #dashboard {
-  display: flex;
+  display: grid;
+  grid-template-columns: 320px 1fr 280px;
+  gap: 32px;
   width: 100%;
-  padding: 24px;
+  max-width: 100%;
+  padding: 32px 40px;
   box-sizing: border-box;
-  justify-content: space-between;
-  gap: 20px;
+  background-color: #0d1117;
+  color: #e6edf3;
+  min-height: calc(100vh - 62px);
+  text-align: left;
 }
+
+@media (max-width: 1012px) {
+  #dashboard {
+    grid-template-columns: 280px 1fr;
+    padding: 24px;
+  }
+  #dashboard > aside:last-of-type {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  #dashboard {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
+/* Headers */
+#dashboard h2 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e6edf3;
+  margin: 0 0 8px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Left Sidebar - Yours Repositories */
+.dashboard-left-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-right: 1px solid #30363d;
+  padding-right: 24px;
+}
+
+@media (max-width: 768px) {
+  .dashboard-left-sidebar {
+    border-right: none;
+    padding-right: 0;
+    border-bottom: 1px solid #30363d;
+    padding-bottom: 24px;
+  }
+}
+
+#search {
+  width: 100%;
+}
+
+#search input {
+  width: 100%;
+  background-color: #0d1117;
+  color: #e6edf3;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 14px;
+  line-height: 20px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#search input:focus {
+  border-color: #58a6ff;
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.3);
+}
+
+.repo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.repo-item {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 0;
+}
+
+.repo-item-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.repo-icon {
+  font-size: 14px;
+  color: #8b949e;
+  flex-shrink: 0;
+}
+
+.repo-link {
+  color: #58a6ff;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+  word-break: break-all;
+}
+
+.repo-link:hover {
+  text-decoration: underline;
+}
+
+.repo-desc {
+  color: #8b949e;
+  font-size: 12px;
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn-new-repo {
+  background-color: #238636;
+  color: #ffffff;
+  border: 1px solid rgba(240, 246, 252, 0.1);
+  border-radius: 6px;
+  padding: 3px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: background-color 0.2s;
+}
+
+.btn-new-repo:hover {
+  background-color: #2ea043;
+}
+
+/* Center Main Area - Suggested Repositories Feed */
+.dashboard-main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.suggested-title-bar {
+  border-bottom: 1px solid #30363d;
+  padding-bottom: 10px;
+  margin-bottom: 4px;
+}
+
+.suggested-title-bar h2 {
+  font-size: 16px !important;
+}
+
+.suggested-card-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.suggested-card {
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: border-color 0.2s;
+  text-align: left;
+}
+
+.suggested-card:hover {
+  border-color: #8b949e;
+}
+
+.suggested-card h4 {
+  color: #58a6ff;
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 6px 0;
+  word-break: break-all;
+}
+
+.suggested-card p {
+  color: #8b949e;
+  font-size: 13px;
+  margin: 0 0 12px 0;
+}
+
+.suggested-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #8b949e;
+}
+
+.visibility-badge {
+  border: 1px solid #30363d;
+  border-radius: 2em;
+  padding: 1px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #8b949e;
+}
+
+/* Right Sidebar - Upcoming Events */
+.dashboard-right-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-left: 1px solid #30363d;
+  padding-left: 24px;
+}
+
+@media (max-width: 1012px) {
+  .dashboard-right-sidebar {
+    border-left: none;
+    padding-left: 0;
+  }
+}
+
+.events-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.event-item {
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 13px;
+}
+
+.event-item p {
+  color: #e6edf3;
+  margin: 0 0 4px 0;
+  font-weight: 500;
+}
+
+.event-item span {
+  color: #8b949e;
+  font-size: 11px;
+}
+

@@ -57,46 +57,89 @@ const Dashboard = () => {
     <>
       <Navbar>
         <section id="dashboard">
-          <aside>
-            <h2>Suggested Repositories</h2>
-            {suggestedRepositories.map((repo) => (
-              <div key={repo._id || repo.name}>
-                <h4>{repo.name}</h4>
-                <p>{repo.description}</p>
-              </div>
-            ))}
-          </aside>
-          <main>
-            <h2>Yours Repositories</h2>
+          {/* Left Sidebar - Yours Repositories */}
+          <aside className="dashboard-left-sidebar">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+              <h2>Top Repositories</h2>
+              <a href="/create" className="btn-new-repo">
+                New
+              </a>
+            </div>
             <div id="search">
               <input
                 type="text"
                 value={searchQuery}
-                placeholder="Search..."
+                placeholder="Find a repository..."
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            {searchResults.map((repo) => (
-              <div key={repo._id || repo.name}>
-                <h4>{repo.name}</h4>
-                <p>{repo.description}</p>
-              </div>
-            ))}
+            <div className="repo-list">
+              {searchResults.length === 0 ? (
+                <p style={{ color: "#8b949e", fontSize: "13px" }}>No repositories found</p>
+              ) : (
+                searchResults.map((repo) => (
+                  <div key={repo._id || repo.name} className="repo-item">
+                    <div className="repo-item-header">
+                      <span className="repo-icon">📁</span>
+                      <a href={`/repo/${repo._id}`} className="repo-link">
+                        {repo.name}
+                      </a>
+                    </div>
+                    {repo.description && <p className="repo-desc">{repo.description}</p>}
+                  </div>
+                ))
+              )}
+            </div>
+          </aside>
+
+          {/* Center Main Area - Explore/Suggested Repositories */}
+          <main className="dashboard-main-content">
+            <div className="suggested-title-bar">
+              <h2>Explore Repositories</h2>
+            </div>
+            <div className="suggested-card-grid">
+              {suggestedRepositories.length === 0 ? (
+                <p style={{ color: "#8b949e", fontSize: "13px" }}>No suggested repositories available</p>
+              ) : (
+                suggestedRepositories.map((repo) => (
+                  <div key={repo._id || repo.name} className="suggested-card">
+                    <div>
+                      <h4>{repo.name}</h4>
+                      <p>{repo.description || "No description provided."}</p>
+                    </div>
+                    <div className="suggested-card-footer">
+                      <span className="visibility-badge">
+                        {repo.visibility ? "Public" : "Private"}
+                      </span>
+                      <span style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}>
+                        ⭐ Star
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </main>
-          <aside>
-            <h2>upcomming Events</h2>
-            <ul>
-              <li>
-                <p>hello1</p>
+
+          {/* Right Sidebar - Upcoming Events */}
+          <aside className="dashboard-right-sidebar">
+            <h2>Upcoming Events</h2>
+            <ul className="events-list">
+              <li className="event-item">
+                <p>🌐 GitHub Universe 2026</p>
+                <span>The global developer event of the year. Virtual passes are free. • Nov 10-12</span>
               </li>
-              <li>
-                <p>hello2</p>
+              <li className="event-item">
+                <p>💡 Open Source Hackathon</p>
+                <span>Collaborate and build the future of dev tools. • Registration Open</span>
               </li>
-              <li>
-                <p>hello3</p>
+              <li className="event-item">
+                <p>🎙️ Tech Talk: React 19 & Next.js</p>
+                <span>Live stream on new React features and compiler. • Friday, 6:00 PM</span>
               </li>
-              <li>
-                <p>hello4</p>
+              <li className="event-item">
+                <p>☕ CodeHub Dev Meetup</p>
+                <span>Local community networking, lightning talks, and QA. • Sunday, 4:00 PM</span>
               </li>
             </ul>
           </aside>
