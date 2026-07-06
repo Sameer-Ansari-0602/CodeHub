@@ -119,3 +119,35 @@
   border-color: #f85149;
   color: white;
 }
+
+/* Custom GitHub-style Sub-navigation */
+.sub-nav {
+  display: flex;
+  border-bottom: 1px solid #30363d;
+  background-color: #0d1117;
+  padding: 0 32px;
+  gap: 8px;
+}
+
+.sub-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  color: #8b949e;
+  cursor: pointer;
+  font-size: 14px;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.sub-nav-item:hover {
+  color: #e6edf3;
+  border-bottom-color: #8b949e;
+}
+
+.sub-nav-item.active {
+  color: #e6edf3;
+  border-bottom-color: #f78166;
+  font-weight: 600;
+}

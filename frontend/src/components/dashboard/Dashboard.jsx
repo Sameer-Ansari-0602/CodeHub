@@ -104,7 +104,9 @@ const Dashboard = () => {
                 suggestedRepositories.map((repo) => (
                   <div key={repo._id || repo.name} className="suggested-card">
                     <div>
-                      <h4>{repo.name}</h4>
+                      <a href={`/repo/${repo._id}`} className="repo-link" style={{ textDecoration: "none" }}>
+                        <h4 style={{ margin: "0 0 6px 0", color: "#58a6ff", cursor: "pointer" }}>{repo.name}</h4>
+                      </a>
                       <p>{repo.description || "No description provided."}</p>
                     </div>
                     <div className="suggested-card-footer">
