@@ -2,27 +2,30 @@ import React from "react";
 import { Link } from "react-router-dom";
 import "./navbar.css";
 
-const Navbar = () => {
+const Navbar = ({ children }) => {
   return (
-    <nav>
-      <Link to="/">
+    <>
+      <nav>
+        <Link to="/">
+          <div>
+            <img
+              src="https://www.github.com/images/modules/logos_page/GitHub-Mark.png"
+              alt="Github Logo"
+            />
+            <h3>GitHub</h3>
+          </div>
+        </Link>
         <div>
-          <img
-            src="https:/www.github.com/images/modules/logos_page/GitHub-Mark.png"
-            alt="Github Logo"
-          />
-          <h3>GitHub</h3>
+          <Link to="/create">
+            <p>Create a Repository</p>
+          </Link>
+          <Link to="/profile">
+            <p>Profile</p>
+          </Link>
         </div>
-      </Link>
-      <div>
-        <Link to="/create">
-          <p>Create a Repository</p>
-        </Link>
-        <Link to="/profile">
-          <p>Profile</p>
-        </Link>
-      </div>
-    </nav>
+      </nav>
+      {children}
+    </>
   );
 };
 
