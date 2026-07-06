@@ -59,7 +59,7 @@ const Profile = () => {
 
       <div className="profile-page-wrapper">
         <div className="user-profile-section">
-          <img className="profile-image" src={userDetails.avatarUrl || "https://avatar.iran.liara.run/public/avatar"} alt="Profile" />
+          <img className="profile-image" src={userDetails.avatarUrl || "https://thumbs.dreamstime.com/b/default-profile-picture-icon-high-resolution-high-resolution-default-profile-picture-icon-symbolizing-no-display-picture-360167031.jpg"} alt="Profile" />
 
           <div className="name">
             <h3>{userDetails.username}</h3>
