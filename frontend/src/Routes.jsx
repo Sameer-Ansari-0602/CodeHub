@@ -9,7 +9,6 @@ import Login from "./components/auth/Login";
 import Signup from "./components/auth/SignUp";
 import CreateRepository from "./components/dashboard/CreateRepository";
 import StarredRepositories from "./components/dashboard/StarredRepositories";
-import Issues from "./components/dashboard/Issues";
 
 //Auth Context
 import { useAuth } from "./authContext";
@@ -61,10 +60,6 @@ const ProjectRoutes = () => {
     {
       path: "/repo",
       element: <StarredRepositories />,
-    },
-    {
-      path: "/issues",
-      element: <Issues />,
     },
   ]);
 
