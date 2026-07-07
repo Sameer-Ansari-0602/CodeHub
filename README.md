@@ -1,25 +1,84 @@
 # CodeHub 🚀
 
-CodeHub is a full-featured web-based platform (similar to GitHub) coupled with a custom Command Line Interface (CLI) version control system called **apnaGit**. 
-
-It allows users to manage code repositories, create/track issues, star repositories, and synchronize code commits with AWS S3 via a custom CLI tool.
+Welcome to CodeHub. This guide first walks you through using the project commands, followed by a detailed overview of the system architecture and features.
 
 ---
 
-## 📂 Project Structure
+## 🛠️ Terminal Commands & Usage Guide
 
-The project is split into two main directories:
+Follow the guides below to run the application components locally and use the custom Version Control System (VCS) CLI.
 
-*   **`frontend/`**: The web application user interface built using **React (Vite)**, `@primer/react`, and `react-router-dom`. It communicates with the backend APIs to manage accounts, repositories, and issues.
-*   **`backend/`**: The REST API server and CLI tool. Built using **Node.js, Express, MongoDB (Mongoose)**, and **Socket.io** for real-time room communication. It integrates with **AWS S3** to store repository commits.
+### 1. Running the Servers (Frontend & Backend)
+
+To start the local environment, run the following commands in separate terminals:
+
+#### **Backend Server Setup**
+```bash
+# Navigate to the backend directory
+cd backend
+
+# Install dependencies
+npm install
+
+# Run the backend in development mode (starts server on port 3000)
+npm run dev
+```
+
+#### **Frontend App Setup**
+```bash
+# Navigate to the frontend directory
+cd frontend
+
+# Install dependencies
+npm install
+
+# Start the frontend dev server (runs Vite)
+npm run dev
+```
+Once the frontend is running, navigate to the URL printed in your terminal (usually `http://localhost:5173`).
 
 ---
 
-## ⚙️ Configuration Setup
+### 2. Using the `apnaGit` VCS CLI Commands
 
-Before running the project, configure your environment variables.
+The project includes a custom git-like VCS tool called **apnaGit** built via a yargs CLI under `backend/index.js`. You run these commands from the directory you want to version-control.
 
-Create a `.env` file in the `backend/` directory:
+#### **Command Reference**
+
+| Command | Usage | Description |
+| :--- | :--- | :--- |
+| **Initialize Repo** | `node backend/index.js init` | Initializes a new repository. Creates a local `.apnaGit` directory containing a `commits` folder and a `config.json` file. |
+| **Stage File** | `node backend/index.js add <file>` | Adds the specified file to the staging area by copying it to `.apnaGit/staging/`. |
+| **Commit Changes** | `node backend/index.js commit <message>` | Commits staged files. Packages them under a unique UUID folder in `.apnaGit/commits/` alongside a `commit.json` metadata file. |
+| **Push to S3** | `node backend/index.js push` | Uploads local commits from `.apnaGit/commits/` to your AWS S3 bucket. |
+| **Pull from S3** | `node backend/index.js pull` | Pulls all commits from your AWS S3 bucket down to the local `.apnaGit/commits/` directory. |
+| **Revert Commit** | `node backend/index.js revert <commitId>` | Reverts your workspace files to the state of the specified `commitId` from `.apnaGit/commits/`. |
+| **Help Menu** | `node backend/index.js --help` | Displays the help menu with all available command details. |
+
+---
+
+## 🧬 Project Overview & Explanation
+
+### What is CodeHub?
+CodeHub is a full-featured web application platform modeled after GitHub, combined with a custom CLI-based version control system (`apnaGit`). It provides a user interface for users to host repositories, track issues, star public repositories, and view activities, alongside a terminal client that lets users push and pull directory snapshots to AWS S3.
+
+### 📂 Folder Structure
+*   **`frontend/`**: The client-side application built using **React (Vite)**, `@primer/react` for GitHub-styled components, and `react-router-dom` for application routing.
+*   **`backend/`**: The server-side application containing:
+    *   **REST APIs**: Node/Express endpoints for users, repositories, and issues.
+    *   **Real-time Server**: Socket.io integration to handle join rooms and sync state.
+    *   **`apnaGit` CLI**: The logic and controllers defining the custom CLI repository interactions (`init.js`, `add.js`, `commit.js`, etc.).
+
+### 🧬 Key Features
+1. **User Authentication**: Secure Signup, Login, Profile updates, and JWT Token authorization.
+2. **Repository Management**: Create, view, update, and delete repositories with public/private visibility toggles.
+3. **Issue Tracker**: Create issues, track status (open/closed), and link them to repositories.
+4. **Social & Collaboration**: Star public repositories.
+5. **Custom Cloud VCS**: Local staging and commit structures coupled with AWS S3 backups.
+
+### ⚙️ Environment Configuration (`backend/.env`)
+
+Configure the backend variables inside `backend/.env` for proper operation:
 
 ```env
 # AWS Configuration (Used by apnaGit CLI for S3 integration)
@@ -35,67 +94,3 @@ JWT_SECRET_KEY=your_jwt_secret_token
 
 > [!NOTE]  
 > Notice that the AWS Access Key ID env variable is spelled with a double 'Y' (`AWS_ACCESS_KEYY`) due to the project's configuration code.
-
----
-
-## 🛠️ How to Run the Application
-
-Follow these steps to run both the frontend and backend locally:
-
-### 1. Start the Backend Server
-
-```bash
-# Navigate to the backend directory
-cd backend
-
-# Install dependencies
-npm install
-
-# Run the backend in development mode (starts server on port 3000)
-npm run dev
-```
-
-### 2. Start the Frontend App
-
-```bash
-# Open a new terminal window, then navigate to the frontend directory
-cd frontend
-
-# Install dependencies
-npm install
-
-# Start the frontend dev server (runs Vite)
-npm run dev
-```
-
-Open your browser and navigate to the URL provided by Vite (usually `http://localhost:5173`).
-
----
-
-## 💻 How to Use the `apnaGit` CLI Commands
-
-The backend includes a custom version control system called `apnaGit` implemented via yargs CLI in `backend/index.js`. 
-
-You run these commands inside the directory you wish to track.
-
-### Command Reference
-
-| Command | Usage | Description |
-| :--- | :--- | :--- |
-| **Initialize Repo** | `node backend/index.js init` | Initializes a new repository. Creates a hidden `.apnaGit` directory with a `commits` folder and a `config.json` file. |
-| **Stage File** | `node backend/index.js add <file>` | Adds the specified file to the staging area by copying it to `.apnaGit/staging/`. |
-| **Commit Changes** | `node backend/index.js commit <message>` | Commits all staged files. Packages them in a unique UUID directory inside `.apnaGit/commits/` with commit metadata. |
-| **Push to S3** | `node backend/index.js push` | Uploads all local commits from `.apnaGit/commits/` to AWS S3. |
-| **Pull from S3** | `node backend/index.js pull` | Pulls down all commits from the S3 bucket into the local `.apnaGit/commits/` folder. |
-| **Revert Commit** | `node backend/index.js revert <commitId>` | Reverts the workspace directory to the state of the specified `commitId` by restoring its files. |
-| **Help Menu** | `node backend/index.js --help` | Displays the help menu with all available command details. |
-
----
-
-## 🧬 Key Features
-
-1. **User Authentication**: Secure Signup, Login, Profile updates, and JWT Token verification.
-2. **Repository Management**: Create, view, update, and delete repositories with public/private visibility toggles.
-3. **Issue Tracker**: Create issues, track status, and link issues to specific repositories.
-4. **Social & Collaboration**: Users can star repositories to show appreciation.
-5. **Custom VCS CLI (`apnaGit`)**: Local file staging and version snapshotting, combined with cloud backup to AWS S3.
