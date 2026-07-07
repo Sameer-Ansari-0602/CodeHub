@@ -19,6 +19,9 @@ const Navbar = ({ children }) => {
           <Link to="/create">
             <p>Create a Repository</p>
           </Link>
+          <Link to="/issues">
+            <p>Issues</p>
+          </Link>
           <Link to="/profile">
             <p>Profile</p>
           </Link>
