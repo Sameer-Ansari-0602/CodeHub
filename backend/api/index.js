@@ -45,10 +45,19 @@ app.use((req, res, next) => {
   next();
 });
 
-mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => console.log("mongodb connected"))
-  .catch((err) => console.error("Error in mongodb connection", err));
+app.use(async (req, res, next) => {
+  if (mongoose.connection.readyState === 1) {
+    return next();
+  }
+  try {
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log("mongodb connected successfully");
+    next();
+  } catch (err) {
+    console.error("Error in mongodb connection", err);
+    res.status(500).json({ error: "Database connection failed" });
+  }
+});
 
 app.use("/", mainRouter);
 
