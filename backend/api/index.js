@@ -13,6 +13,7 @@ app.use(express.json());
 
 const allowedOrigins = [
   "https://code-hub-frontend-ochre.vercel.app",
+  "https://code-hub-app.vercel.app",
   "https://code-hub-live.vercel.app",
   "http://localhost:5173",
   "http://localhost:3000",
