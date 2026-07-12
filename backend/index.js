@@ -17,7 +17,8 @@ const { pullRepo } = require("./controllers/pull");
 const { revertRepo } = require("./controllers/revert");
 const { Socket } = require("dgram");
 
-dotenv.config();
+const path = require("path");
+dotenv.config({ path: path.join(__dirname, ".env") });
 
 yargs(hideBin(process.argv))
   .command("start", "Starts a new server", {}, startServer)
