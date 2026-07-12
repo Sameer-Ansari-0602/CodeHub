@@ -88,4 +88,42 @@ const getS3Readme = async (req, res) => {
   }
 };
 
-module.exports = { getS3Repositories, getS3Readme };
+const getS3Files = async (req, res) => {
+  const { repoName } = req.params;
+  try {
+    const repoData = await S3.listObjectsV2({
+      Bucket: S3_BUCKET,
+      Prefix: `repositories/${repoName}/commits/`,
+    }).promise();
+
+    const objects = repoData.Contents || [];
+    if (objects.length === 0) {
+      return res.json({ success: true, files: [] });
+    }
+
+    // Find the latest file to determine the latest commit ID folder
+    const latestFile = [...objects].sort((a, b) => new Date(b.LastModified) - new Date(a.LastModified))[0];
+    
+    // Extract commit UUID from key
+    const keyParts = latestFile.Key.split("/");
+    const commitsIndex = keyParts.indexOf("commits");
+    if (commitsIndex === -1 || commitsIndex + 1 >= keyParts.length) {
+      return res.json({ success: true, files: [] });
+    }
+    const latestCommitId = keyParts[commitsIndex + 1];
+
+    // Filter all objects that belong to the latest commit ID folder
+    const latestCommitPrefix = `repositories/${repoName}/commits/${latestCommitId}/`;
+    const commitFiles = objects
+      .filter(obj => obj.Key.startsWith(latestCommitPrefix))
+      .map(obj => obj.Key.replace(latestCommitPrefix, ""))
+      .filter(fileName => fileName !== "commit.json"); // hide internal commit file
+
+    res.json({ success: true, files: commitFiles });
+  } catch (err) {
+    console.error("Error fetching S3 files:", err);
+    res.status(500).json({ error: "Failed to fetch files from S3" });
+  }
+};
+
+module.exports = { getS3Repositories, getS3Readme, getS3Files };

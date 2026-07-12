@@ -6,6 +6,7 @@ const repoRouter = express.Router();
 
 repoRouter.get("/repo/s3-list", s3Controller.getS3Repositories);
 repoRouter.get("/repo/s3-readme/:repoName", s3Controller.getS3Readme);
+repoRouter.get("/repo/s3-files/:repoName", s3Controller.getS3Files);
 repoRouter.post("/repo/create", repoController.createRepository);
 repoRouter.get("/repo/all", repoController.getAllRepositories);
 repoRouter.get("/repo/:id", repoController.fetchRepositoryById);

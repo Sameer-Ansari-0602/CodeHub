@@ -130,6 +130,37 @@ const Dashboard = () => {
     }
   };
 
+  const [expandedRepoFiles, setExpandedRepoFiles] = useState(null);
+  const [repoFiles, setRepoFiles] = useState({});
+  const [loadingFiles, setLoadingFiles] = useState(false);
+
+  const handleToggleFiles = async (repoName) => {
+    if (expandedRepoFiles === repoName) {
+      setExpandedRepoFiles(null);
+      return;
+    }
+
+    setExpandedRepoFiles(repoName);
+    if (!repoFiles[repoName]) {
+      setLoadingFiles(true);
+      try {
+        const response = await fetch(apiUrl(`/repo/s3-files/${repoName}`));
+        const data = await response.json();
+        if (data.success) {
+          setRepoFiles(prev => ({
+            ...prev,
+            [repoName]: data.files || []
+          }));
+        }
+      } catch (err) {
+        console.error("Error fetching repository files:", err);
+      } finally {
+        setLoadingFiles(false);
+      }
+    }
+  };
+
+
   const filteredS3Repos = searchQuery === ""
     ? s3Repositories
     : s3Repositories.filter((repo) =>
@@ -274,22 +305,70 @@ const Dashboard = () => {
                           <br />
                           node backend/index.js pull
                         </div>
+
+                        {/* Collapsible S3 Files Viewer */}
+                        {expandedRepoFiles === repo.name && (
+                          <div style={{
+                            marginTop: "12px",
+                            borderTop: "1px solid #30363d",
+                            paddingTop: "12px",
+                            textAlign: "left"
+                          }}>
+                            <h5 style={{ margin: "0 0 8px 0", color: "#8b949e", fontSize: "12px", fontWeight: "600" }}>Pushed Files</h5>
+                            {loadingFiles && !repoFiles[repo.name] ? (
+                              <p style={{ color: "#8b949e", fontSize: "12px", margin: 0 }}>Loading files from S3...</p>
+                            ) : (
+                              <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                                {!repoFiles[repo.name] || repoFiles[repo.name].length === 0 ? (
+                                  <li style={{ color: "#8b949e", fontSize: "12px" }}>No files found in S3 commits.</li>
+                                ) : (
+                                  repoFiles[repo.name].map(file => (
+                                    <li key={file} style={{ 
+                                      display: "flex", 
+                                      alignItems: "center", 
+                                      gap: "8px", 
+                                      fontSize: "13px", 
+                                      color: "#c9d1d9",
+                                      padding: "4px 0"
+                                    }}>
+                                      <span style={{ color: "#8b949e", fontSize: "12px" }}>📄</span>
+                                      <span style={{ wordBreak: "break-all" }}>{file}</span>
+                                    </li>
+                                  ))
+                                )}
+                              </ul>
+                            )}
+                          </div>
+                        )}
                       </div>
                       <div className="suggested-card-footer" style={{ marginTop: "12px" }}>
                         <span className="visibility-badge" style={{ borderColor: "#238636", color: "#3fb950" }}>
                           S3 Bucket Synced
                         </span>
-                        <span 
-                          onClick={() => handleViewReadme(repo.name)}
-                          style={{
-                            cursor: "pointer",
-                            color: "#58a6ff",
-                            fontSize: "12px",
-                            fontWeight: "500"
-                          }}
-                        >
-                          📖 View README
-                        </span>
+                        <div style={{ display: "flex", gap: "16px" }}>
+                          <span 
+                            onClick={() => handleViewReadme(repo.name)}
+                            style={{
+                              cursor: "pointer",
+                              color: "#58a6ff",
+                              fontSize: "12px",
+                              fontWeight: "500"
+                            }}
+                          >
+                            📖 View README
+                          </span>
+                          <span 
+                            onClick={() => handleToggleFiles(repo.name)}
+                            style={{
+                              cursor: "pointer",
+                              color: "#58a6ff",
+                              fontSize: "12px",
+                              fontWeight: "500"
+                            }}
+                          >
+                            {expandedRepoFiles === repo.name ? "📂 Hide Files" : "📁 View Files"}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   ))
