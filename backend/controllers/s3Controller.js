@@ -23,10 +23,10 @@ const getS3Repositories = async (req, res) => {
             Prefix: `repositories/${name}/commits/`,
           }).promise();
 
-          // Find any key that ends with README.md (e.g. commits/some-id/README.md)
-          const readmeObj = (repoData.Contents || []).find((obj) =>
-            obj.Key.endsWith("README.md")
-          );
+          // Find the latest key that ends with README.md by sorting by LastModified date descending
+          const readmeObj = (repoData.Contents || [])
+            .filter((obj) => obj.Key.endsWith("README.md"))
+            .sort((a, b) => new Date(b.LastModified) - new Date(a.LastModified))[0];
 
           if (readmeObj) {
             const readmeData = await S3.getObject({
@@ -68,9 +68,9 @@ const getS3Readme = async (req, res) => {
       Prefix: `repositories/${repoName}/commits/`,
     }).promise();
 
-    const readmeObj = (repoData.Contents || []).find((obj) =>
-      obj.Key.endsWith("README.md")
-    );
+    const readmeObj = (repoData.Contents || [])
+      .filter((obj) => obj.Key.endsWith("README.md"))
+      .sort((a, b) => new Date(b.LastModified) - new Date(a.LastModified))[0];
 
     if (!readmeObj) {
       return res.json({ success: true, readme: "No README.md content is currently available for this repository." });
