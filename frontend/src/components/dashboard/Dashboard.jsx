@@ -111,10 +111,29 @@ const Dashboard = () => {
     }
   };
 
+  const [viewingReadmeRepo, setViewingReadmeRepo] = useState(null);
+  const [readmeContent, setReadmeContent] = useState("");
+  const [loadingReadme, setLoadingReadme] = useState(false);
+
+  const handleViewReadme = async (repoName) => {
+    setViewingReadmeRepo(repoName);
+    setLoadingReadme(true);
+    setReadmeContent("");
+    try {
+      const response = await fetch(apiUrl(`/repo/s3-readme/${repoName}`));
+      const data = await response.json();
+      setReadmeContent(data.readme || "No README.md content is currently available.");
+    } catch (err) {
+      setReadmeContent("Failed to load README.md content from S3.");
+    } finally {
+      setLoadingReadme(false);
+    }
+  };
+
   const filteredS3Repos = searchQuery === ""
     ? s3Repositories
-    : s3Repositories.filter((repoName) =>
-        repoName.toLowerCase().includes(searchQuery.toLowerCase())
+    : s3Repositories.filter((repo) =>
+        repo.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
 
   return (
@@ -232,12 +251,12 @@ const Dashboard = () => {
                 filteredS3Repos.length === 0 ? (
                   <p style={{ color: "#8b949e", fontSize: "13px" }}>No S3 repositories match your search query.</p>
                 ) : (
-                  filteredS3Repos.map((repoName) => (
-                    <div key={repoName} className="suggested-card">
+                  filteredS3Repos.map((repo) => (
+                    <div key={repo.name} className="suggested-card">
                       <div>
-                        <h4 style={{ margin: "0 0 6px 0", color: "#58a6ff" }}>{repoName}</h4>
+                        <h4 style={{ margin: "0 0 6px 0", color: "#58a6ff" }}>{repo.name}</h4>
                         <p style={{ color: "#8b949e", fontSize: "13px", marginTop: "8px" }}>
-                          This repository is hosted in AWS S3 and managed via the <code>apnaGit</code> CLI.
+                          {repo.description}
                         </p>
                         <div style={{ 
                           backgroundColor: "#0d1117", 
@@ -251,7 +270,7 @@ const Dashboard = () => {
                         }}>
                           <span style={{ color: "#8b949e" }}># To pull this repository locally:</span>
                           <br />
-                          node backend/index.js init {repoName}
+                          node backend/index.js init {repo.name}
                           <br />
                           node backend/index.js pull
                         </div>
@@ -259,6 +278,17 @@ const Dashboard = () => {
                       <div className="suggested-card-footer" style={{ marginTop: "12px" }}>
                         <span className="visibility-badge" style={{ borderColor: "#238636", color: "#3fb950" }}>
                           S3 Bucket Synced
+                        </span>
+                        <span 
+                          onClick={() => handleViewReadme(repo.name)}
+                          style={{
+                            cursor: "pointer",
+                            color: "#58a6ff",
+                            fontSize: "12px",
+                            fontWeight: "500"
+                          }}
+                        >
+                          📖 View README
                         </span>
                       </div>
                     </div>
@@ -292,6 +322,75 @@ const Dashboard = () => {
           </aside>
         </section>
       </Navbar>
+
+      {/* Modern Glassmorphic README Modal */}
+      {viewingReadmeRepo && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "rgba(1, 4, 9, 0.8)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 1000,
+          backdropFilter: "blur(4px)"
+        }}>
+          <div style={{
+            backgroundColor: "#161b22",
+            border: "1px solid #30363d",
+            borderRadius: "12px",
+            width: "90%",
+            maxWidth: "700px",
+            maxHeight: "80vh",
+            display: "flex",
+            flexDirection: "column",
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.5)",
+            padding: "24px"
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid #30363d", paddingBottom: "12px" }}>
+              <h3 style={{ margin: 0, color: "#58a6ff" }}>{viewingReadmeRepo} / README.md</h3>
+              <button 
+                onClick={() => setViewingReadmeRepo(null)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#8b949e",
+                  fontSize: "20px",
+                  cursor: "pointer"
+                }}
+              >
+                &times;
+              </button>
+            </div>
+            <div style={{ overflowY: "auto", flex: 1, paddingRight: "8px", color: "#e6edf3", textAlign: "left", fontSize: "14px", lineHeight: "1.6", whiteSpace: "pre-wrap" }}>
+              {loadingReadme ? (
+                <p style={{ color: "#8b949e" }}>Loading README.md from S3...</p>
+              ) : (
+                readmeContent
+              )}
+            </div>
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "16px", borderTop: "1px solid #30363d", paddingTop: "12px" }}>
+              <button 
+                onClick={() => setViewingReadmeRepo(null)}
+                style={{
+                  backgroundColor: "#21262d",
+                  color: "#c9d1d9",
+                  border: "1px solid #30363d",
+                  borderRadius: "6px",
+                  padding: "6px 12px",
+                  cursor: "pointer",
+                  fontWeight: "600"
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
