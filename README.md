@@ -1,338 +1,94 @@
 # CodeHub 🚀
 
-> **CodeHub** is a GitHub-inspired repository management platform built with the MERN stack. It enables users to create and manage repositories through a modern web interface while featuring **apnaGit**, a custom-built command-line version control system that stores project snapshots in **AWS S3**.
-
-🌐 **Live Demo:** https://code-hub-app.vercel.app/
-
----
-
-# 🌟 Highlights
-
-- 💻 Developed a **custom command-line version control system (apnaGit)** from scratch using **Node.js** and **Yargs**
-- ⚡ Implemented custom terminal commands: **`init`**, **`add`**, **`commit`**, **`push`**, **`pull`**, and **`revert`**
-- ☁️ Integrated **AWS S3** for storing and retrieving commit snapshots
-- 🔐 Implemented secure authentication using **JWT** and **bcrypt**
-- 📁 Built a GitHub-inspired repository management platform
-- ⭐ Users can create **public/private repositories** and star repositories
-- 📊 Designed a GitHub-style **Recent Contributions** heatmap for user profiles
-- ⚛️ Built a responsive frontend using **React**, **Vite**, and **Primer React**
+CodeHub is a simple, GitHub-inspired repository management platform. It consists of two main parts:
+1. **Web Dashboard**: A modern web interface where you can create, explore, and star repositories, featuring a user contribution heatmap.
+2. **apnaGit CLI**: A custom-built command-line version control system (like Git) that lets you track files locally and synchronize your snapshots with **AWS S3**.
 
 ---
 
-# 📖 About the Project
+## 💻 apnaGit Custom CLI Commands
 
-CodeHub is a GitHub-inspired repository management platform that allows users to securely create and manage repositories through a familiar developer interface.
+The project includes a custom command-line interface helper. You can run all your version control commands directly through Node.js:
 
-Alongside the web application, the project includes **apnaGit**, a custom version control system built from scratch using **Node.js**. The CLI provides its own terminal commands for initializing repositories, staging files, creating snapshot-based commits, synchronizing project snapshots with AWS S3, and restoring previous project versions.
-
-The web application manages repository metadata, authentication, and user interactions, while **AWS S3** stores project snapshots uploaded through the CLI.
-
----
-
-# ✨ Features
-
-## 🌐 Web Application
-
-- 🔐 User Registration & Login
-- 🔑 JWT Authentication
-- 🔒 Password Encryption using bcrypt
-- 📁 Create Public & Private Repositories
-- 👤 User Profile Page
-- ⭐ Star Repositories
-- 📂 View Personal Repositories
-- 🌍 Explore Repositories
-- 📊 GitHub-inspired Recent Contributions Heatmap
-- 🎨 Responsive GitHub-inspired UI
+* **`init [name]`**: Sets up a new repository. It creates a hidden `.apnaGit/` folder and saves your repository's name. If no name is provided, it defaults to your current directory's name.
+* **`add <file>`**: Stages a specific file, copying it to the local `.apnaGit/staging/` area to prepare it for a commit.
+* **`commit <message>`**: Creates a local snapshot of all staged files under a unique ID, saving your commit details and timestamp.
+* **`push`**: Uploads all your local commits and files securely to your configured AWS S3 bucket.
+* **`pull`**: Downloads and restores all committed files for your repository from AWS S3 back into your local directory.
+* **`revert <commitId>`**: Restores your local project files back to a previous commit snapshot.
 
 ---
 
-## 💻 apnaGit (Custom CLI)
+## ⚙️ How it Works
 
-Built using **Node.js**, **Yargs**, and the **Node.js File System API**.
-
-### Supported Commands
-
-| Command             | Description                           |
-| ------------------- | ------------------------------------- |
-| `init`              | Initialize a local repository         |
-| `add <file>`        | Stage a file                          |
-| `commit <message>`  | Create a snapshot-based commit        |
-| `push`              | Upload commit snapshots to AWS S3     |
-| `pull`              | Download commit snapshots from AWS S3 |
-| `revert <commitId>` | Restore a previous project snapshot   |
-| `--help`            | Display all available commands        |
-
-### CLI Features
-
-- 🖥️ Custom terminal commands
-- 📁 Local repository initialization
-- 📦 File staging
-- 📝 Snapshot-based commits
-- ☁️ AWS S3 synchronization
-- 🔄 Restore previous project versions
-- 📂 Local commit history management
+1. **Local Tracking**: When you initialize (`init`) and stage files (`add`), `apnaGit` tracks files locally within the hidden `.apnaGit/` directory.
+2. **Snapshots**: Committing (`commit`) creates copies of the files inside `.apnaGit/commits/<commit-uuid>/` along with metadata (`commit.json`).
+3. **AWS S3 Sync**: When you run `push`, the CLI reads your local commits and uploads them to the AWS S3 bucket. To keep different repositories separate in S3, files are grouped under a unique prefix: `repositories/${repoName}/commits/...`.
+4. **Dashboard List**: The web dashboard calls a backend API that scans S3 prefixes. It lists all S3 repositories and parses their committed `README.md` files to display description previews and full README modals.
 
 ---
 
-# 🛠️ Tech Stack
+## 🚀 How to Use
 
-## Frontend
-
-- React
-- Vite
-- React Router DOM
-- Axios
-- Primer React
-
-## Backend
-
-- Node.js
-- Express.js
-- JWT
-- bcrypt
-- Yargs
-- Node.js File System API
-
-## Database
-
-- MongoDB
-- Mongoose
-
-## Cloud
-
-- AWS S3
-
----
-
-# 🏗️ Project Architecture
-
-```text
-                    React Frontend
-                           │
-                    Axios + JWT
-                           │
-                    Express Backend
-                           │
-                       MongoDB
-          (Users & Repository Metadata)
-                           │
-        ─────────────────────────────────
-                           │
-                     apnaGit CLI
-                           │
-                 Local File System
-                           │
-                     AWS S3 Bucket
-                  (Commit Snapshots)
-```
-
----
-
-# 📂 Project Structure
-
-```
-CodeHub
-│
-├── frontend/
-│   ├── components/
-│   ├── pages/
-│   ├── assets/
-│   └── App.jsx
-│
-├── backend/
-│   ├── controllers/
-│   ├── models/
-│   ├── routes/
-│   ├── middleware/
-│   ├── apnaGit/
-│   └── index.js
-│
-└── README.md
-```
-
----
-
-# 🚀 Getting Started
-
-## Clone the Repository
+### 1. Project Setup
+Clone the repository and install dependencies in both the backend and frontend folders:
 
 ```bash
-git clone https://github.com/your-username/CodeHub.git
-cd CodeHub
-```
-
----
-
-## Backend Setup
-
-```bash
+# Backend Setup
 cd backend
 npm install
-npm run dev
-```
 
----
-
-## Frontend Setup
-
-```bash
-cd frontend
+# Frontend Setup
+cd ../frontend
 npm install
+```
+
+Make sure to configure your environment variables in `backend/.env`:
+```env
+AWS_ACCESS_KEYY=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+AWS_REGION=your_aws_region
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET_KEY=your_jwt_secret_key
+PORT=3000
+```
+
+### 2. Run the Applications
+```bash
+# Start backend server (runs on Port 3000)
+npm run dev
+
+# Start frontend application (runs on Vite dev server)
+cd ../frontend
 npm run dev
 ```
 
-Visit:
-
-```
-http://localhost:5173
-```
-
----
-
-# 💻 Using apnaGit
-
-Run these commands from the project directory you want to version control.
-
-### Initialize Repository
-
+### 3. Use the apnaGit CLI
+Run version control commands from the root directory:
 ```bash
-node backend/index.js init
-```
+# Initialize your repository
+node backend/index.js init my-repo-name
 
-Creates a hidden `.apnaGit` directory.
+# Stage files
+node backend/index.js add README.md
 
----
+# Commit changes
+node backend/index.js commit "Initial commit"
 
-### Stage a File
-
-```bash
-node backend/index.js add <filename>
-```
-
-Example:
-
-```bash
-node backend/index.js add index.js
-```
-
----
-
-### Commit Files
-
-```bash
-node backend/index.js commit "Initial Commit"
-```
-
-Creates a snapshot of all staged files.
-
----
-
-### Upload Commits to AWS S3
-
-```bash
+# Push to S3
 node backend/index.js push
-```
 
-Uploads all commit snapshots to your configured AWS S3 bucket.
-
----
-
-### Download Commits
-
-```bash
+# Pull from S3
 node backend/index.js pull
 ```
 
-Downloads commit snapshots from AWS S3.
-
 ---
 
-### Restore Previous Snapshot
+## 🌟 Web Dashboard Features
 
-```bash
-node backend/index.js revert <commitId>
-```
-
-Restores the project to the specified commit snapshot.
-
----
-
-# ⚙️ Environment Variables
-
-Create a `.env` file inside the **backend** directory.
-
-```env
-MONGODB_URI=your_mongodb_connection_string
-
-JWT_SECRET_KEY=your_jwt_secret
-
-PORT=3000
-
-AWS_ACCESS_KEYY=your_aws_access_key
-
-AWS_SECRET_ACCESS_KEY=your_aws_secret_key
-
-AWS_REGION=your_aws_region
-
-AWS_BUCKET_NAME=your_bucket_name
-```
-
-> **Note:** The project currently uses `AWS_ACCESS_KEYY` (double **Y**) because it matches the existing implementation.
-
----
-
-# 📸 Screenshots
-
-### Dashboard
-
-_Add Dashboard Screenshot_
-
----
-
-### User Profile
-
-_Add Profile Screenshot_
-
----
-
-### Repository Creation
-
-_Add Repository Creation Screenshot_
-
----
-
-# 🔮 Future Improvements
-
-- Connect web repositories directly with uploaded S3 snapshots
-- Display commit history inside the web application
-- Browse repository files through the web interface
-- Support repository cloning using apnaGit
-- Branch management
-- Merge functionality
-- Repository search enhancements
-
----
-
-# 📚 Learning Outcomes
-
-Through this project, I gained hands-on experience with:
-
-- Building REST APIs using Express.js
-- Implementing JWT authentication and authorization
-- Secure password hashing with bcrypt
-- MongoDB schema design using Mongoose
-- Developing a custom command-line application using Yargs
-- Working with the Node.js File System API
-- Integrating AWS S3 for cloud storage
-- Building responsive user interfaces with React
-- Designing a GitHub-inspired developer platform
-
----
-
-# 🙌 Acknowledgements
-
-The UI design is inspired by GitHub to provide a familiar developer experience. This project was built for learning purposes to explore full-stack development, custom CLI development, and cloud storage integration.
-
----
-
-## ⭐ If you found this project interesting, consider giving it a star!
+* **Repository Management**: Create and toggle repositories between **Public** and **Private** visibility.
+* **Explore Feed**: Search and discover public repositories created by other developers.
+* **Starring**: Bookmark/star repositories you like.
+* **Contribution Heatmap**: A GitHub-inspired chart on user profiles displaying contribution activity.
+* **Modern UI**: Dark-themed, responsive interface matching GitHub aesthetics.
+* **Secure Auth**: Secure signup and login powered by JSON Web Tokens (JWT) and bcrypt encryption.
