@@ -1,7 +1,8 @@
 const fs = require("fs").promises;
 const path = require("path");
 
-async function initRepo() {
+async function initRepo(name) {
+  const repoName = name || path.basename(process.cwd());
   const repoPath = path.resolve(process.cwd(), ".apnaGit"); // creating a hidden folder
   const commitPath = path.join(repoPath, "commits"); // creating another folder in the hidden folder
 
@@ -10,10 +11,10 @@ async function initRepo() {
     await fs.mkdir(commitPath, { recursive: true });
     await fs.writeFile(
       path.join(repoPath, "config.json"), // creating a file
-      JSON.stringify({ bucket: process.env.S3_BUCKET }),
+      JSON.stringify({ bucket: process.env.S3_BUCKET, repoName }),
     );
 
-    console.log("Repository Initailised");
+    console.log(`Repository '${repoName}' Initialised`);
   } catch (err) {
     console.error("Error Initialising Repository", err);
   }

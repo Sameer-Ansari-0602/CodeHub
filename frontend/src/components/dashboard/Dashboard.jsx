@@ -9,6 +9,8 @@ const Dashboard = () => {
   const [suggestedRepositories, setSuggestedRepositories] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
   const [starredRepoIds, setStarredRepoIds] = useState([]);
+  const [s3Repositories, setS3Repositories] = useState([]);
+  const [activeTab, setActiveTab] = useState("explore");
 
   useEffect(() => {
     const userId = localStorage.getItem("userId");
@@ -49,9 +51,22 @@ const Dashboard = () => {
       }
     };
 
+    const fetchS3Repositories = async () => {
+      try {
+        const response = await fetch(apiUrl("/repo/s3-list"));
+        const data = await response.json();
+        if (data.success) {
+          setS3Repositories(data.repositories || []);
+        }
+      } catch (err) {
+        console.error("Error fetching S3 repositories:", err);
+      }
+    };
+
     fetchRepositories();
     fetchSuggestedRepositories();
     fetchStarredRepos();
+    fetchS3Repositories();
   }, []);
 
   useEffect(() => {
@@ -95,6 +110,12 @@ const Dashboard = () => {
       console.error("Error toggling star:", err);
     }
   };
+
+  const filteredS3Repos = searchQuery === ""
+    ? s3Repositories
+    : s3Repositories.filter((repoName) =>
+        repoName.toLowerCase().includes(searchQuery.toLowerCase())
+      );
 
   return (
     <>
@@ -146,40 +167,103 @@ const Dashboard = () => {
 
           {/* Center Main Area - Explore/Suggested Repositories */}
           <main className="dashboard-main-content">
-            <div className="suggested-title-bar">
-              <h2>Explore Repositories</h2>
+            <div className="suggested-title-bar" style={{ display: "flex", gap: "24px", alignItems: "center" }}>
+              <h2 
+                onClick={() => setActiveTab("explore")}
+                style={{ 
+                  cursor: "pointer", 
+                  paddingBottom: "8px", 
+                  borderBottom: activeTab === "explore" ? "2px solid #f78166" : "2px solid transparent",
+                  color: activeTab === "explore" ? "#e6edf3" : "#8b949e",
+                  fontWeight: activeTab === "explore" ? "600" : "400",
+                  transition: "all 0.2s"
+                }}
+              >
+                Explore Repositories
+              </h2>
+              <h2 
+                onClick={() => setActiveTab("s3")}
+                style={{ 
+                  cursor: "pointer", 
+                  paddingBottom: "8px", 
+                  borderBottom: activeTab === "s3" ? "2px solid #f78166" : "2px solid transparent",
+                  color: activeTab === "s3" ? "#e6edf3" : "#8b949e",
+                  fontWeight: activeTab === "s3" ? "600" : "400",
+                  transition: "all 0.2s"
+                }}
+              >
+                S3 Synced Repositories
+              </h2>
             </div>
             <div className="suggested-card-grid">
-              {searchResults.length === 0 ? (
-                <p style={{ color: "#8b949e", fontSize: "13px" }}>No repositories match your search query.</p>
+              {activeTab === "explore" ? (
+                searchResults.length === 0 ? (
+                  <p style={{ color: "#8b949e", fontSize: "13px" }}>No repositories match your search query.</p>
+                ) : (
+                  searchResults.map((repo) => (
+                    <div key={repo._id || repo.name} className="suggested-card">
+                      <div>
+                        <a href={`/repo/${repo._id}`} className="repo-link" style={{ textDecoration: "none" }}>
+                          <h4 style={{ margin: "0 0 6px 0", color: "#58a6ff", cursor: "pointer" }}>{repo.name}</h4>
+                        </a>
+                        <p>{repo.description || "No description provided."}</p>
+                      </div>
+                      <div className="suggested-card-footer">
+                        <span className="visibility-badge">
+                          {repo.visibility ? "Public" : "Private"}
+                        </span>
+                        <span 
+                          onClick={() => handleStar(repo._id)} 
+                          style={{ 
+                            cursor: "pointer", 
+                            display: "flex", 
+                            alignItems: "center", 
+                            gap: "4px",
+                            color: starredRepoIds.includes(repo._id) ? "#e3b341" : "#8b949e"
+                          }}
+                        >
+                          {starredRepoIds.includes(repo._id) ? "★ Starred" : "☆ Star"}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )
               ) : (
-                searchResults.map((repo) => (
-                  <div key={repo._id || repo.name} className="suggested-card">
-                    <div>
-                      <a href={`/repo/${repo._id}`} className="repo-link" style={{ textDecoration: "none" }}>
-                        <h4 style={{ margin: "0 0 6px 0", color: "#58a6ff", cursor: "pointer" }}>{repo.name}</h4>
-                      </a>
-                      <p>{repo.description || "No description provided."}</p>
+                filteredS3Repos.length === 0 ? (
+                  <p style={{ color: "#8b949e", fontSize: "13px" }}>No S3 repositories match your search query.</p>
+                ) : (
+                  filteredS3Repos.map((repoName) => (
+                    <div key={repoName} className="suggested-card">
+                      <div>
+                        <h4 style={{ margin: "0 0 6px 0", color: "#58a6ff" }}>{repoName}</h4>
+                        <p style={{ color: "#8b949e", fontSize: "13px", marginTop: "8px" }}>
+                          This repository is hosted in AWS S3 and managed via the <code>apnaGit</code> CLI.
+                        </p>
+                        <div style={{ 
+                          backgroundColor: "#0d1117", 
+                          padding: "10px 12px", 
+                          borderRadius: "6px", 
+                          marginTop: "12px",
+                          border: "1px solid #30363d",
+                          fontFamily: "monospace",
+                          fontSize: "12px",
+                          color: "#c9d1d9"
+                        }}>
+                          <span style={{ color: "#8b949e" }}># To pull this repository locally:</span>
+                          <br />
+                          node backend/index.js init {repoName}
+                          <br />
+                          node backend/index.js pull
+                        </div>
+                      </div>
+                      <div className="suggested-card-footer" style={{ marginTop: "12px" }}>
+                        <span className="visibility-badge" style={{ borderColor: "#238636", color: "#3fb950" }}>
+                          S3 Bucket Synced
+                        </span>
+                      </div>
                     </div>
-                    <div className="suggested-card-footer">
-                      <span className="visibility-badge">
-                        {repo.visibility ? "Public" : "Private"}
-                      </span>
-                      <span 
-                        onClick={() => handleStar(repo._id)} 
-                        style={{ 
-                          cursor: "pointer", 
-                          display: "flex", 
-                          alignItems: "center", 
-                          gap: "4px",
-                          color: starredRepoIds.includes(repo._id) ? "#e3b341" : "#8b949e"
-                        }}
-                      >
-                        {starredRepoIds.includes(repo._id) ? "★ Starred" : "☆ Star"}
-                      </span>
-                    </div>
-                  </div>
-                ))
+                  ))
+                )
               )}
             </div>
           </main>

@@ -21,7 +21,19 @@ dotenv.config();
 
 yargs(hideBin(process.argv))
   .command("start", "Starts a new server", {}, startServer)
-  .command("init", "Initialise a new Repository", {}, initRepo)
+  .command(
+    "init [name]",
+    "Initialise a new Repository",
+    (yargs) => {
+      yargs.positional("name", {
+        description: "Repository name",
+        type: "string",
+      });
+    },
+    (argv) => {
+      initRepo(argv.name);
+    },
+  )
   .command(
     "add <file>",
     "add file to the  Repository",

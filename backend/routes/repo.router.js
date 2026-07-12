@@ -1,8 +1,10 @@
 const express = require("express");
 const repoController = require("../controllers/repoController");
+const s3Controller = require("../controllers/s3Controller");
 
 const repoRouter = express.Router();
 
+repoRouter.get("/repo/s3-list", s3Controller.getS3Repositories);
 repoRouter.post("/repo/create", repoController.createRepository);
 repoRouter.get("/repo/all", repoController.getAllRepositories);
 repoRouter.get("/repo/:id", repoController.fetchRepositoryById);
